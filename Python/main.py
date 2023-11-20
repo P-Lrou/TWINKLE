@@ -3,7 +3,6 @@ import cv2
 import socketio
 import subprocess
 import time
-import math
 
 from get_position import *
 
@@ -49,29 +48,24 @@ def main():
         results = holistic.process(image)
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
+        h, w, _ = frame.shape
+
         if results.left_hand_landmarks:
-            h, w, _ = frame.shape
-            left_hand_coords = [int(results.left_hand_landmarks.landmark[9].x * frame_size_x),
-                                int(results.left_hand_landmarks.landmark[9].y * frame_size_y)]
+            left_hand_coords = get_specific_point_coords(results, frame_size_x, frame_size_y, "left", 9)
 
             sio.emit('left_hand_coords', left_hand_coords)
 
         if results.right_hand_landmarks:
-            h, w, _ = frame.shape
-            right_hand_coords = [int(results.right_hand_landmarks.landmark[9].x * frame_size_x),
-                                 int(results.right_hand_landmarks.landmark[9].y * frame_size_y)]
+            right_hand_coords = get_specific_point_coords(results, frame_size_x, frame_size_y, "right", 9)
 
             sio.emit('right_hand_coords', right_hand_coords)
 
         if results.pose_landmarks:
-            h, w, _ = frame.shape
-            head_coords = [int(results.pose_landmarks.landmark[0].x * frame_size_x),
-                           int(results.pose_landmarks.landmark[0].y * frame_size_y)]
+            head_coords = get_specific_point_coords(results, frame_size_x, frame_size_y, "head", 0)
 
             sio.emit('head_coords', head_coords)
 
         if results.right_hand_landmarks and results.left_hand_landmarks:
-            h, w, _ = frame.shape
             right_pinky = get_all_fingers_coords(results, frame_size_x, frame_size_y, 'right', 'pinky')
             right_ring = get_all_fingers_coords(results, frame_size_x, frame_size_y, 'right', 'ring')
             right_middle = get_all_fingers_coords(results, frame_size_x, frame_size_y, 'right', 'middle')

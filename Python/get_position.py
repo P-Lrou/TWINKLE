@@ -31,3 +31,19 @@ def get_all_fingers_coords(results, frame_size_x, frame_size_y, hand, finger_nam
 
     # Return the list of landmark coordinates
     return landmarks
+
+
+def get_specific_point_coords(results, frame_size_x, frame_size_y, landmark_type, landmark_index):
+    landmark = None
+
+    if landmark_type == "right":
+        landmark = [int(results.right_hand_landmarks.landmark[landmark_index].x * frame_size_x),
+                    int(results.right_hand_landmarks.landmark[landmark_index].y * frame_size_y)]
+    elif landmark_type == "left":
+        landmark = [int(results.left_hand_landmarks.landmark[landmark_index].x * frame_size_x),
+                    int(results.left_hand_landmarks.landmark[landmark_index].y * frame_size_y)]
+    elif landmark_type == "body":
+        landmark = [int(results.pose_landmarks.landmark[landmark_index].x * frame_size_x),
+                    int(results.pose_landmarks.landmark[landmark_index].y * frame_size_y)]
+
+    return landmark
