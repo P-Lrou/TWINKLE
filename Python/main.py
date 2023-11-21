@@ -9,7 +9,7 @@ from get_position import *
 
 def main():
     # Start the Node.js server
-    p = subprocess.Popen(["node", "../server.js"])
+    p = subprocess.Popen(["node", "./server.js"])
 
     # Wait for the server to initialize
     time.sleep(2)

@@ -6,6 +6,10 @@ let can_update = false;
 let color = "#FFFFFF"; // Default color for sand squares
 let actualMusique = 0; // Current music style
 let SVGSize = 30
+let waitTimeForRandomPoint = 0
+let previous_timestamp = 0;
+let haveScreen = false
+let actualScreen = "game";
 
 // Canvas initialization
 const canvas = document.getElementById("canvas");
@@ -44,27 +48,50 @@ socket.on('clap', () => {
     }
 });
 
+let canAddToArray = false
+
 // Function to draw sand at specified coordinates
 function drawSand(x, y) {
-    let vy = Math.random() * 500 - 500 / 2
-    console.log(vy)
-    sand_array.push({x, y, vy, state: 1, color: color})
+    let vy = Math.random() * 500 - 250; // Adjusted to center velocity around 0
+
+    if (waitTimeForRandomPoint === 0) {
+        waitTimeForRandomPoint = Math.random() * (2 - 1) + 1;
+        setTimeout(() => {
+            canAddToArray = true
+        }, waitTimeForRandomPoint * 1000); // Converted seconds to milliseconds
+    } else {
+        if (canAddToArray) {
+            waitTimeForRandomPoint = 0;
+            sand_array.push({x, y, vy, state: 1, color});
+            canAddToArray = false
+        } else {
+            sand_array.push({x, y, vy, state: 0, color});
+        }
+    }
 }
 
+
 const img = new Image();
+const img2 = new Image();
 
 // Function to draw an SVG at specified coordinates and color
-function drawSVG(x, y, color) {
+function drawSVG(x, y, color, state) {
     let svg = undefined;
 
     switch (color) {
-        case "#FFE863":
+        case "rgba(255,232,99,0.25)":
+            if (state === 1) {
+                color = "rgb(255,232,99)"
+            }
             svg = `
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080">
                     <path class="cls-1" d="m543.26,231.76s-10.63,302.1-297.76,308.15c-.74.02-.8,1.09-.06,1.18,55.12,6.6,294.57,50.05,297.65,307.15,0,0,5.24-301.46,291.41-308.13.74-.02.8-1.09.07-1.18-54.58-6.58-298.68-50.38-291.31-307.17Z" fill="${color}" />
                 </svg>`;
             break;
-        case "#1701FB":
+        case "rgba(23,1,251,0.25)":
+            if (state === 1) {
+                color = "rgb(23,1,251)"
+            }
             svg = `
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 235 264">
                     <g>
@@ -89,7 +116,10 @@ function drawSVG(x, y, color) {
                     </g>
                 </svg>`;
             break;
-        case "#8200FF":
+        case "rgba(130,0,255,0.25)":
+            if (state === 1) {
+                color = "rgb(130,0,255)"
+            }
             svg = `
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 235 264">
                     <polygon class="cls-1" points="140.06 98.38 120.95 5 98.53 98.38 119.3 75.83 140.06 98.38" fill="${color}"/>
@@ -103,7 +133,10 @@ function drawSVG(x, y, color) {
                       <polygon class="cls-1" points="119.84 117.06 94.84 131.88 119.84 146.7 143.76 131.88 119.84 117.06" fill="${color}"/>
                 </svg>`;
             break;
-        case "#FF0000":
+        case "rgba(255,0,0,0.25)":
+            if (state === 1) {
+                color = "rgb(255,0,0)"
+            }
             svg = `
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 235 264">
                     <polyline class="cls-2" points="78.64 146.34 22.63 102.83 92.79 110.86" stroke="${color}" stroke-width="5" />
@@ -116,46 +149,94 @@ function drawSVG(x, y, color) {
             break;
     }
 
-    img.src = `data:image/svg+xml,${encodeURIComponent(svg)}`;
-    ctx.drawImage(img, x, y, SVGSize, SVGSize);
+    if (state === 0) {
+        img.src = `data:image/svg+xml,${encodeURIComponent(svg)}`;
+        ctx.drawImage(img, x, y, SVGSize, SVGSize);
+    }
+    if (state === 1) {
+        img2.src = `data:image/svg+xml,${encodeURIComponent(svg)}`;
+        ctx.drawImage(img2, x, y, SVGSize, SVGSize);
+    }
 }
 
+let elapsedTime = 0;
+const removalTime = 5;
 
 // Function to update game state
 function update(deltaTime) {
     const gravity = 600;
 
-    let i = -1
-    fall_array.forEach(element => {
-        i++
+    elapsedTime += deltaTime;
 
-        element.vy += gravity * deltaTime
-        element.y = element.y + (element.vy * deltaTime)
-        if (element.y + SVGSize > canvas.height) {
-            fall_array.splice(i, 1);
+    let i = -1;
+    fall_array.forEach(point => {
+        i++;
+        if (elapsedTime > removalTime || point.state === 0) {
+            point.vy += gravity * deltaTime;
+            point.y = point.y + (point.vy * deltaTime);
+            if (point.y + SVGSize > canvas.height) {
+                fall_array.splice(i, 1);
+            }
         }
-    })
+    });
 
     if (fall_array.length === 0) {
+        elapsedTime = 0;
         can_update = false;
     }
 }
 
+
+let oldPointCoords = {x: 0, y: 0}
+
+
+function drawLine(ctx, x1, y1, x2, y2) {
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+}
 
 // Function to draw on the canvas
 function draw() {
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+    let constellation_points = []
+    let i = -1
 
-    sand_array.forEach(element => {
-        drawSVG(element.x, element.y, element.color);
-    })
+    sand_array.forEach(point => {
+        if (point.state === 1) {
+            constellation_points.push(point)
+        }
+        drawSVG(point.x, point.y, point.color, point.state);
+    });
+    constellation_points.forEach(point => {
+        i++
+        if (i !== 0) {
+            ctx.lineWidth = 5;
+            ctx.strokeStyle = point.color;
+            drawLine(ctx, constellation_points[i - 1].x + SVGSize / 2, constellation_points[i - 1].y + SVGSize / 2, point.x + SVGSize / 2, point.y + SVGSize / 2)
+        }
+    });
+
 
     if (can_update) {
-        fall_array.forEach(element => {
-            drawSVG(element.x, element.y, element.color);
-        })
+        i = -1
+        fall_array.forEach(point => {
+            if (point.state === 1) {
+                constellation_points.push(point)
+            }
+            drawSVG(point.x, point.y, point.color, point.state);
+        });
+        constellation_points.forEach(point => {
+            i++
+            if (i !== 0) {
+                ctx.lineWidth = 5;
+                ctx.strokeStyle = point.color;
+                drawLine(ctx, constellation_points[i - 1].x + SVGSize / 2, constellation_points[i - 1].y + SVGSize / 2, point.x + SVGSize / 2, point.y + SVGSize / 2)
+            }
+        });
     }
 }
 
@@ -163,16 +244,16 @@ function draw() {
 function changeColor(number) {
     switch (number) {
         case 2:
-            color = "#1701FB";
+            color = "rgba(23,1,251,0.25)";
             break;
         case 1:
-            color = "#FFE863";
+            color = "rgba(255,232,99,0.25)";
             break;
         case 4:
-            color = "#FF0000";
+            color = "rgba(255,0,0,0.25)";
             break;
         case 3:
-            color = "#8200FF";
+            color = "rgba(130,0,255,0.25)";
             break;
     }
 }
@@ -180,9 +261,6 @@ function changeColor(number) {
 // Function to change music style
 function changeMusic() {
     actualMusique++;
-    if (actualMusique >= 5) {
-        actualMusique = 1;
-    }
 
     fall_array = sand_array
     sand_array = []
@@ -204,7 +282,6 @@ function changeMusic() {
     }
 }
 
-let previous_timestamp = 0;
 
 function loop(timestamp) {
 
@@ -214,12 +291,18 @@ function loop(timestamp) {
 
 
     if (can_update) {
+        if (haveScreen) {
+            haveScreen = false;
+        }
         update(deltaTime);
     }
-    draw();
+    if (actualScreen === "game") {
+        draw();
+    }
     requestAnimationFrame(loop);
 }
 
 // Start the game loop
 requestAnimationFrame(loop);
 changeMusic();
+
