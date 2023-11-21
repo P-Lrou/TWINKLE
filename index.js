@@ -5,11 +5,11 @@ const socket = io();
 let can_update = false;
 let color = "#FFFFFF"; // Default color for sand squares
 let actualMusique = 0; // Current music style
+let SVGSize = 30
 
 // Canvas initialization
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
-const cellSize = 30;
 
 // Resize canvas to match screen dimensions
 function resizeCanvas() {
@@ -21,26 +21,22 @@ function resizeCanvas() {
 resizeCanvas();
 window.addEventListener("resize", resizeCanvas);
 
-// Calculate number of squares in the canvas
-const width = Math.floor(canvas.width / cellSize);
-const height = Math.floor(canvas.height / cellSize);
-
 // Arrays to store the state and color of each sand square
-let sand_array = Array.from(Array(height), () => Array(width).fill({state: 0, color: color}));
-let fall_array = Array.from(Array(height + 20), () => Array(width).fill({state: 0, color: color}));
+let sand_array = []
+let fall_array = []
 
 // Event listeners for socket events
 socket.on('left_hand_coords', (data) => {
-    drawSand(data[0], data[1]);
+    if (!can_update) {
+        drawSand(data[0], data[1]);
+    }
 });
 
 socket.on('right_hand_coords', (data) => {
-    drawSand(data[0], data[1]);
+    if (!can_update) {
+        drawSand(data[0], data[1]);
+    }
 });
-
-// socket.on('head_coords', (data) => {
-//     drawSand(data[0], data[1]);
-// });
 
 socket.on('clap', () => {
     if (!can_update) {
@@ -50,14 +46,10 @@ socket.on('clap', () => {
 
 // Function to draw sand at specified coordinates
 function drawSand(x, y) {
-    const gridX = Math.floor(x / cellSize);
-    const gridY = Math.floor(y / cellSize);
-
-    if (gridX >= 0 && gridX < width && gridY >= 0 && gridY < height) {
-        sand_array[gridY][gridX] = {state: 1, color: color};
-    }
+    let vy = Math.random() * 500 - 500 / 2
+    console.log(vy)
+    sand_array.push({x, y, vy, state: 1, color: color})
 }
-
 
 const img = new Image();
 
@@ -68,7 +60,7 @@ function drawSVG(x, y, color) {
     switch (color) {
         case "#FFE863":
             svg = `
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080"> width="${cellSize}" height="${cellSize}">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080">
                     <path class="cls-1" d="m543.26,231.76s-10.63,302.1-297.76,308.15c-.74.02-.8,1.09-.06,1.18,55.12,6.6,294.57,50.05,297.65,307.15,0,0,5.24-301.46,291.41-308.13.74-.02.8-1.09.07-1.18-54.58-6.58-298.68-50.38-291.31-307.17Z" fill="${color}" />
                 </svg>`;
             break;
@@ -125,53 +117,45 @@ function drawSVG(x, y, color) {
     }
 
     img.src = `data:image/svg+xml,${encodeURIComponent(svg)}`;
-    ctx.drawImage(img, x * cellSize, y * cellSize, cellSize, cellSize);
+    ctx.drawImage(img, x, y, SVGSize, SVGSize);
 }
 
+
 // Function to update game state
-function update() {
-    let hasFallingSand = false;
+function update(deltaTime) {
+    const gravity = 600;
 
-    for (let y = fall_array.length - 1; y >= 0; y--) {
-        for (let x = 0; x < width; x++) {
-            if (fall_array[y][x].state === 1) {
-                if (y + 1 < fall_array.length) {
-                    fall_array[y + 1][x] = {state: 1, color: fall_array[y][x].color};
-                    fall_array[y][x] = {state: 0, color: color};
-                    hasFallingSand = true;
-                } else {
-                    fall_array[y][x] = {state: 0, color: color};
-                }
-            }
+    let i = -1
+    fall_array.forEach(element => {
+        i++
+
+        element.vy += gravity * deltaTime
+        element.y = element.y + (element.vy * deltaTime)
+        if (element.y + SVGSize > canvas.height) {
+            fall_array.splice(i, 1);
         }
-    }
+    })
 
-    if (!hasFallingSand) {
+    if (fall_array.length === 0) {
         can_update = false;
     }
 }
 
+
 // Function to draw on the canvas
 function draw() {
     ctx.fillStyle = "black";
-    ctx.fillRect(0, 0, width * cellSize, height * cellSize);
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-            if (sand_array[y][x].state === 1) {
-                drawSVG(x, y, sand_array[y][x].color);
-            }
-        }
-    }
+
+    sand_array.forEach(element => {
+        drawSVG(element.x, element.y, element.color);
+    })
 
     if (can_update) {
-        for (let y = 0; y < fall_array.length; y++) {
-            for (let x = 0; x < width; x++) {
-                if (fall_array[y][x].state === 1) {
-                    drawSVG(x, y, fall_array[y][x].color);
-                }
-            }
-        }
+        fall_array.forEach(element => {
+            drawSVG(element.x, element.y, element.color);
+        })
     }
 }
 
@@ -200,8 +184,8 @@ function changeMusic() {
         actualMusique = 1;
     }
 
-    fall_array = [...sand_array.map(row => [...row])];
-    sand_array = Array.from(Array(height), () => Array(width).fill({state: 0, color: color}));
+    fall_array = sand_array
+    sand_array = []
 
     can_update = true;
     switch (actualMusique) {
@@ -220,15 +204,22 @@ function changeMusic() {
     }
 }
 
-// Main game loop
-function loop() {
+let previous_timestamp = 0;
+
+function loop(timestamp) {
+
+    const deltaTime = (timestamp - previous_timestamp) / 1000;
+
+    previous_timestamp = timestamp
+
+
     if (can_update) {
-        update();
+        update(deltaTime);
     }
     draw();
     requestAnimationFrame(loop);
 }
 
 // Start the game loop
-loop();
+requestAnimationFrame(loop);
 changeMusic();
