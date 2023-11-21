@@ -1,0 +1,5 @@
+mediapipe==0.10.7
+opencv-python==4.8.1.78
+python-socketio==5.10.0
+requests==2.31.0
+websocket-client==1.6.4
