@@ -10,10 +10,17 @@ let waitTimeForRandomPoint = 0
 let previous_timestamp = 0;
 let haveScreen = false
 let actualScreen = "game";
+let background = new Image();
+let songIsPlaying = false;
 
 // Canvas initialization
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
+
+const classicSong = new Audio("./songs/classicSong.mp3")
+const technoSong = new Audio("./songs/technoSong.mp3")
+const popSong = new Audio("./songs/popSong.mp3")
+const rockSong = new Audio("./songs/rockSong.mp3")
 
 // Resize canvas to match screen dimensions
 function resizeCanvas() {
@@ -171,6 +178,13 @@ function update(deltaTime) {
     let i = -1;
     fall_array.forEach(point => {
         i++;
+        if (elapsedTime > 4.5 && !haveScreen) {
+            if (songIsPlaying) {
+                stopSong()
+            }
+            haveScreen = true
+            generateImage();
+        }
         if (elapsedTime > removalTime || point.state === 0) {
             point.vy += gravity * deltaTime;
             point.y = point.y + (point.vy * deltaTime);
@@ -183,12 +197,18 @@ function update(deltaTime) {
     if (fall_array.length === 0) {
         elapsedTime = 0;
         can_update = false;
+        if (actualMusique > 4){
+            actualScreen = "end"
+        }
     }
 }
 
-
-let oldPointCoords = {x: 0, y: 0}
-
+function generateImage() {
+    const image = new Image();
+    image.src = canvas.toDataURL('image/png');
+    let data = image.src.substring(22)
+    socket.emit('save_image', data);
+}
 
 function drawLine(ctx, x1, y1, x2, y2) {
     ctx.beginPath();
@@ -199,8 +219,10 @@ function drawLine(ctx, x1, y1, x2, y2) {
 
 // Function to draw on the canvas
 function draw() {
-    ctx.fillStyle = "black";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // ctx.fillStyle = "black";
+    // ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.drawImage(background, 0, 0, window.innerWidth, window.innerHeight);
 
     let constellation_points = []
     let i = -1
@@ -214,7 +236,7 @@ function draw() {
     constellation_points.forEach(point => {
         i++
         if (i !== 0) {
-            ctx.lineWidth = 5;
+            ctx.lineWidth = 3;
             ctx.strokeStyle = point.color;
             drawLine(ctx, constellation_points[i - 1].x + SVGSize / 2, constellation_points[i - 1].y + SVGSize / 2, point.x + SVGSize / 2, point.y + SVGSize / 2)
         }
@@ -260,6 +282,7 @@ function changeColor(number) {
 
 // Function to change music style
 function changeMusic() {
+
     actualMusique++;
 
     fall_array = sand_array
@@ -269,40 +292,102 @@ function changeMusic() {
     switch (actualMusique) {
         case 1:
             changeColor(1);
+            background.src = "./assets/background_1.png";
             break;
         case 2:
             changeColor(2);
+            background.src = "./assets/background_2.png";
             break;
         case 3:
             changeColor(3);
+            background.src = "./assets/background_3.png";
             break;
         case 4:
             changeColor(4);
+            background.src = "./assets/background_4.png";
             break;
     }
 }
 
 
-function loop(timestamp) {
+function playSong() {
+    switch (actualMusique) {
+        case 1:
+            classicSong.play();
+            songIsPlaying = true;
+            break;
+        case 2:
+            technoSong.play();
+            songIsPlaying = true;
+            break;
+        case 3:
+            popSong.play();
+            songIsPlaying = true;
+            break;
+        case 4:
+            rockSong.play();
+            songIsPlaying = true;
+            break;
+    }
+}
 
+function stopSong() {
+    switch (actualMusique - 1) {
+        case 1:
+            fadeOutAudioAndPause(classicSong);
+            break;
+        case 2:
+            fadeOutAudioAndPause(technoSong);
+            break;
+        case 3:
+            fadeOutAudioAndPause(popSong);
+            break;
+        case 4:
+            fadeOutAudioAndPause(rockSong);
+            break;
+    }
+}
+
+function fadeOutAudioAndPause(audioElement) {
+    const fadeDuration = 1500;
+    const volumeStep = audioElement.volume / (fadeDuration / 100);
+
+    const fadeOut = setInterval(() => {
+        if (audioElement.volume > 0 && audioElement.volume - volumeStep > 0) {
+            audioElement.volume -= volumeStep;
+        } else {
+            clearInterval(fadeOut);
+            audioElement.pause();
+            audioElement.volume = 1;
+            songIsPlaying = false;
+        }
+    }, 100);
+}
+
+
+function loop(timestamp) {
     const deltaTime = (timestamp - previous_timestamp) / 1000;
 
     previous_timestamp = timestamp
 
 
     if (can_update) {
-        if (haveScreen) {
-            haveScreen = false;
-        }
         update(deltaTime);
+    } else if (haveScreen) {
+        haveScreen = false;
     }
     if (actualScreen === "game") {
         draw();
+        if (!can_update && !songIsPlaying) {
+            playSong()
+        }
     }
     requestAnimationFrame(loop);
 }
 
 // Start the game loop
-requestAnimationFrame(loop);
-changeMusic();
+window.addEventListener("click", () => {
+    requestAnimationFrame(loop);
+    changeMusic();
+});
 
