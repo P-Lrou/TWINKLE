@@ -172,11 +172,11 @@ function drawSVG(x, y, color, state) {
             } else {
                 svg = `
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 235 264">
-                    <polyline class="cls-2" points="78.64 146.34 22.63 102.83 92.79 110.86" stroke="${color}" stroke-width="5" />
-                    <polyline class="cls-2" points="165.4 146.34 221.42 102.83 151.26 110.86" stroke="${color}" stroke-width="5" />
-                    <polyline class="cls-2" points="158.79 160.37 179.57 228.19 126.81 181.25" stroke="${color}" stroke-width="5" />
-                    <polyline class="cls-2" points="79.26 160.37 58.47 228.19 111.24 181.25" stroke="${color}" stroke-width="5" />
-                    <polyline class="cls-2" points="101.21 97.91 122.38 30.21 139.39 98.75" stroke="${color}" stroke-width="5" />
+                    <polyline class="cls-2" points="78.64 146.34 22.63 102.83 92.79 110.86" stroke="${color}" fill="transparent" stroke-width="5" />
+                    <polyline class="cls-2" points="165.4 146.34 221.42 102.83 151.26 110.86" stroke="${color}" fill="transparent" stroke-width="5" />
+                    <polyline class="cls-2" points="158.79 160.37 179.57 228.19 126.81 181.25" stroke="${color}" fill="transparent" stroke-width="5" />
+                    <polyline class="cls-2" points="79.26 160.37 58.47 228.19 111.24 181.25" stroke="${color}" fill="transparent" stroke-width="5" />
+                    <polyline class="cls-2" points="101.21 97.91 122.38 30.21 139.39 98.75" stroke="${color}" fill="transparent" stroke-width="5" />
                     <polygon class="cls-1" points="153.39 185.41 120.26 167.68 86.87 184.93 93.49 147.94 66.77 121.51 104 116.38 120.87 82.8 137.26 116.62 174.41 122.29 147.31 148.33 153.39 185.41" fill="${color}"/>
                 </svg>`;
             }
