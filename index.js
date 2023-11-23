@@ -1,5 +1,5 @@
 // Socket communication initialization
-const socket = io();
+const socket = io.connect();
 
 // Game state flags
 let can_update = false;
@@ -9,9 +9,13 @@ let SVGSize = 30
 let waitTimeForRandomPoint = 0
 let previous_timestamp = 0;
 let haveScreen = false
-let actualScreen = "game";
+let actualScreen = "start";
 let background = new Image();
 let songIsPlaying = false;
+let introIsStarted = false;
+let deltaTime;
+let elapsedTimeForMusic = 0;
+let endIsShowed = false;
 
 // Canvas initialization
 const canvas = document.getElementById("canvas");
@@ -36,22 +40,37 @@ window.addEventListener("resize", resizeCanvas);
 let sand_array = []
 let fall_array = []
 
+socket.on('connect', () => {
+    console.log('connection')
+});
+
+
 // Event listeners for socket events
 socket.on('left_hand_coords', (data) => {
-    if (!can_update) {
+    if (!can_update && actualScreen === "game") {
         drawSand(data[0], data[1]);
     }
 });
 
 socket.on('right_hand_coords', (data) => {
-    if (!can_update) {
+    if (!can_update && actualScreen === "game") {
         drawSand(data[0], data[1]);
     }
 });
 
 socket.on('clap', () => {
-    if (!can_update) {
+    if (actualScreen === "start" && introIsStarted) {
+        actualScreen = "game"
+        requestAnimationFrame(loop);
         changeMusic();
+    } else if (!can_update && elapsedTimeForMusic > 10) {
+        changeMusic();
+    }
+});
+
+socket.on('body_is_here', () => {
+    if (actualScreen === "start" && !introIsStarted) {
+        showGameIntro()
     }
 });
 
@@ -104,14 +123,14 @@ function drawSVG(x, y, color, state) {
                     <g>
                         <polyline class="cls-2" points="118.61 215.7 118.61 163.16 118.61 162.28" stroke="${color}" stroke-width="10"/>
                         <polyline class="cls-2" points="118.61 46.87 118.61 96.47 118.61 97.4" stroke="${color}" stroke-width="10"/>
-                        <path class="cls-1" d="m118.97,96.94c-.12.16-.24.30-.36.46-.54.70-1.09,1.41-1.63,2.13-1,1.31-2.01,2.65-2.99,4-.72.94-1.45,1.93-2.15,2.89-1,1.37-1.99,2.75-2.99,4.16-1.13,1.59-2.27,3.22-3.40,4.86-1.39,2.01-2.77,4.06-4.16,6.13-1.77,2.67-3.5,5.33-5.17,7.96-2.77-4.42-5.39-8.78-7.8-13.04-18.23-31.92-26.91-57.94-19.86-62.65,7.05-4.7,27.74,13.43,50.15,42.63.12.16.24.30.36.46Z" stroke="${color}" stroke-width="10"/>
-                        <path class="cls-1" d="m169.92,206.43c-7.13,4.74-28.26-13.89-50.97-43.71,4.6-6.13,9.27-12.7,13.89-19.64.08-.12.16-.24.24-.36,2.95-4.44,5.79-8.86,8.44-13.2,2.65,4.24,5.19,8.42,7.54,12.52,18.91,32.7,28.06,59.61,20.86,64.39Z" stroke="${color}" stroke-width="10"/>
-                        <path class="cls-1" d="m149.18,116.53c-2.37,4.22-4.94,8.56-7.66,12.98-2.07-3.3-4.2-6.61-6.43-9.95-.92-1.39-1.85-2.75-2.77-4.10-4.44-6.55-8.92-12.76-13.35-18.53,21.93-28.28,42.03-45.68,48.94-41.08,6.91,4.60-1.27,29.67-18.73,60.68Z" stroke="${color}" stroke-width="10"/>
-                        <path class="cls-1" d="m132.84,143.08c-4.62,6.93-9.29,13.51-13.89,19.64-.12-.14-.22-.30-.34-.44-4.54-5.99-9.16-12.4-13.73-19.19,4.44.18,9.02.26,13.73.26s9.63-.10,14.23-.26Z" stroke="${color}" stroke-width="10"/>
-                        <path class="cls-1" d="m118.95,162.72c-.12.14-.22.30-.34.44-23.15,30.73-44.88,50.10-52.15,45.28-7.34-4.88,2.33-32.78,22.03-66.38,2.39-4.10,4.94-8.28,7.64-12.52,2.27,3.68,4.68,7.42,7.18,11.17.52.80,1.07,1.59,1.59,2.37,4.56,6.79,9.18,13.20,13.73,19.19.12.14.22.30.34.44Z" stroke="${color}" stroke-width="10"/>
-                        <path class="cls-1" d="m141.52,129.52c-2.65,4.34-5.49,8.76-8.44,13.20-.08.12-.16.24-.24.36-4.60.16-9.37.26-14.23.26s-9.29-.08-13.73-.26c-.52-.78-1.07-1.57-1.59-2.37-2.49-3.76-4.90-7.50-7.18-11.17,1.67-2.63,3.40-5.29,5.17-7.96,1.39-2.07,2.77-4.12,4.16-6.13,1.13-1.65,2.27-3.28,3.40-4.86,1-1.41,1.99-2.79,2.99-4.16.70-.96,1.43-1.95,2.15-2.89.98-1.35,1.99-2.69,2.99-4.00,.54-.72,1.09-1.43,1.63-2.13,.12-.16,.24-.30,.36-.46,4.42,5.77,8.90,11.98,13.35,18.53,.92,1.35,1.85,2.71,2.77,4.10,2.23,3.34,4.36,6.65,6.43,9.95Z" stroke="${color}" stroke-width="10"/>
-                        <path class="cls-1" d="m104.88,143.08c-5.75-.20-11.23-.54-16.40-1.03-24.92-2.21-42.23-7.09-42.23-12.78s17.22-10.55,42.07-12.78c2.41,4.26,5.02,8.62,7.80,13.04,2.27,3.68,4.68,7.42,7.18,11.17,.52,.80,1.07,1.59,1.59,2.37Z" stroke="${color}" stroke-width="10"/>
-                        <path class="cls-1" d="m190.96,129.27c0,5.67-17.16,10.53-41.90,12.76-5.11,.46-10.55,.82-16.22,1.05,.08-.12,.16-.24,.24-.36,2.95-4.44,5.79-8.86,8.44-13.20,2.71-4.42,5.29-8.76,7.66-12.98,24.68,2.23,41.78,7.09,41.78,12.74Z" stroke="${color}" stroke-width="10"/>
+                        <path class="cls-1" d="m118.97,96.94c-.12.16-.24.30-.36.46-.54.70-1.09,1.41-1.63,2.13-1,1.31-2.01,2.65-2.99,4-.72.94-1.45,1.93-2.15,2.89-1,1.37-1.99,2.75-2.99,4.16-1.13,1.59-2.27,3.22-3.40,4.86-1.39,2.01-2.77,4.06-4.16,6.13-1.77,2.67-3.5,5.33-5.17,7.96-2.77-4.42-5.39-8.78-7.8-13.04-18.23-31.92-26.91-57.94-19.86-62.65,7.05-4.7,27.74,13.43,50.15,42.63.12.16.24.30.36.46Z" stroke="${color}" fill="transparent" stroke-width="10"/>
+                        <path class="cls-1" d="m169.92,206.43c-7.13,4.74-28.26-13.89-50.97-43.71,4.6-6.13,9.27-12.7,13.89-19.64.08-.12.16-.24.24-.36,2.95-4.44,5.79-8.86,8.44-13.2,2.65,4.24,5.19,8.42,7.54,12.52,18.91,32.7,28.06,59.61,20.86,64.39Z" stroke="${color}" fill="transparent" stroke-width="10"/>
+                        <path class="cls-1" d="m149.18,116.53c-2.37,4.22-4.94,8.56-7.66,12.98-2.07-3.3-4.2-6.61-6.43-9.95-.92-1.39-1.85-2.75-2.77-4.10-4.44-6.55-8.92-12.76-13.35-18.53,21.93-28.28,42.03-45.68,48.94-41.08,6.91,4.60-1.27,29.67-18.73,60.68Z" stroke="${color}" fill="transparent" stroke-width="10"/>
+                        <path class="cls-1" d="m132.84,143.08c-4.62,6.93-9.29,13.51-13.89,19.64-.12-.14-.22-.30-.34-.44-4.54-5.99-9.16-12.4-13.73-19.19,4.44.18,9.02.26,13.73.26s9.63-.10,14.23-.26Z" stroke="${color}" fill="transparent" stroke-width="10"/>
+                        <path class="cls-1" d="m118.95,162.72c-.12.14-.22.30-.34.44-23.15,30.73-44.88,50.10-52.15,45.28-7.34-4.88,2.33-32.78,22.03-66.38,2.39-4.10,4.94-8.28,7.64-12.52,2.27,3.68,4.68,7.42,7.18,11.17.52.80,1.07,1.59,1.59,2.37,4.56,6.79,9.18,13.20,13.73,19.19.12.14.22.30.34.44Z" stroke="${color}" fill="transparent" stroke-width="10"/>
+                        <path class="cls-1" d="m141.52,129.52c-2.65,4.34-5.49,8.76-8.44,13.20-.08.12-.16.24-.24.36-4.60.16-9.37.26-14.23.26s-9.29-.08-13.73-.26c-.52-.78-1.07-1.57-1.59-2.37-2.49-3.76-4.90-7.50-7.18-11.17,1.67-2.63,3.40-5.29,5.17-7.96,1.39-2.07,2.77-4.12,4.16-6.13,1.13-1.65,2.27-3.28,3.40-4.86,1-1.41,1.99-2.79,2.99-4.16.70-.96,1.43-1.95,2.15-2.89.98-1.35,1.99-2.69,2.99-4.00,.54-.72,1.09-1.43,1.63-2.13,.12-.16,.24-.30,.36-.46,4.42,5.77,8.90,11.98,13.35,18.53,.92,1.35,1.85,2.71,2.77,4.10,2.23,3.34,4.36,6.65,6.43,9.95Z" stroke="${color}" fill="transparent" stroke-width="10"/>
+                        <path class="cls-1" d="m104.88,143.08c-5.75-.20-11.23-.54-16.40-1.03-24.92-2.21-42.23-7.09-42.23-12.78s17.22-10.55,42.07-12.78c2.41,4.26,5.02,8.62,7.80,13.04,2.27,3.68,4.68,7.42,7.18,11.17,.52,.80,1.07,1.59,1.59,2.37Z" stroke="${color}" fill="transparent" stroke-width="10"/>
+                        <path class="cls-1" d="m190.96,129.27c0,5.67-17.16,10.53-41.90,12.76-5.11,.46-10.55,.82-16.22,1.05,.08-.12,.16-.24,.24-.36,2.95-4.44,5.79-8.86,8.44-13.20,2.71-4.42,5.29-8.76,7.66-12.98,24.68,2.23,41.78,7.09,41.78,12.74Z" stroke="${color}" fill="transparent" stroke-width="10"/>
                     </g>
                     <g>
                         <polygon class="cls-3" points="118.61 40.94 116.67 32.08 114.72 23.23 118.61 23.24 122.5 23.23 120.55 32.08 118.61 40.94" fill="${color}"/>
@@ -167,7 +186,7 @@ function drawSVG(x, y, color, state) {
 }
 
 let elapsedTime = 0;
-const removalTime = 5;
+const removalTime = 6;
 
 // Function to update game state
 function update(deltaTime) {
@@ -197,17 +216,20 @@ function update(deltaTime) {
     if (fall_array.length === 0) {
         elapsedTime = 0;
         can_update = false;
-        if (actualMusique > 4){
+        if (actualMusique > 4) {
             actualScreen = "end"
         }
     }
 }
 
+let imgCount = 0;
+
 function generateImage() {
+    imgCount++
     const image = new Image();
     image.src = canvas.toDataURL('image/png');
     let data = image.src.substring(22)
-    socket.emit('save_image', data);
+    socket.emit('save_image', [data, imgCount]);
 }
 
 function drawLine(ctx, x1, y1, x2, y2) {
@@ -282,7 +304,6 @@ function changeColor(number) {
 
 // Function to change music style
 function changeMusic() {
-
     actualMusique++;
 
     fall_array = sand_array
@@ -292,19 +313,15 @@ function changeMusic() {
     switch (actualMusique) {
         case 1:
             changeColor(1);
-            background.src = "./assets/background_1.png";
             break;
         case 2:
             changeColor(2);
-            background.src = "./assets/background_2.png";
             break;
         case 3:
             changeColor(3);
-            background.src = "./assets/background_3.png";
             break;
         case 4:
             changeColor(4);
-            background.src = "./assets/background_4.png";
             break;
     }
 }
@@ -366,28 +383,129 @@ function fadeOutAudioAndPause(audioElement) {
 
 
 function loop(timestamp) {
-    const deltaTime = (timestamp - previous_timestamp) / 1000;
+    deltaTime = (timestamp - previous_timestamp) / 1000;
 
     previous_timestamp = timestamp
 
 
     if (can_update) {
         update(deltaTime);
-    } else if (haveScreen) {
+    }
+    if (haveScreen && !can_update) {
         haveScreen = false;
     }
     if (actualScreen === "game") {
+        document.querySelector('.startMenu').style.display = "none";
+        document.getElementById('canvas').style.display = "block";
         draw();
+        if (elapsedTimeForMusic > 60) {
+            changeMusic();
+            elapsedTimeForMusic = 0
+        }
         if (!can_update && !songIsPlaying) {
             playSong()
+            changeBackground()
+            elapsedTimeForMusic = 0
+            elapsedTime = 0;
+        }
+    } else if (actualScreen === "end") {
+        if (!endIsShowed) {
+            showEnd()
         }
     }
+    elapsedTimeForMusic += deltaTime
     requestAnimationFrame(loop);
+}
+
+function changeBackground() {
+    switch (actualMusique) {
+        case 1:
+            background.src = "./assets/background_classic.png";
+            break;
+        case 2:
+            background.src = "./assets/background_techno.png";
+            break;
+        case 3:
+            background.src = "./assets/background_pop.png";
+            break;
+        case 4:
+            background.src = "./assets/background_rock.png";
+            break;
+    }
+}
+
+function showStartMenu() {
+    document.getElementById('canvas').style.display = "none";
+}
+
+function showGameIntro() {
+    introIsStarted = true;
+    document.querySelector('.startMenu .logo').style.display = "none";
+    document.querySelector('.startMenu .intro').style.display = "block";
+}
+
+function showEnd() {
+    endIsShowed = true;
+    document.querySelector('canvas').style.display = "none";
+    document.querySelector('.endMenu').style.display = "grid";
+
+    const imageSources = [
+        "./images/image_1.png",
+        "./images/image_2.png",
+        "./images/image_3.png",
+        "./images/image_4.png"
+    ];
+
+    const images = document.querySelectorAll('.endMenu img');
+
+    images.forEach((img, index) => {
+        fetchImage(img, imageSources[index]);
+    });
+}
+
+function fetchImage(img, src) {
+    fetch(src)
+        .then(response => response.blob())
+        .then(blob => {
+            const objectURL = URL.createObjectURL(blob);
+            img.setAttribute('data-src', src);
+            img.src = '';
+            img.src = objectURL;
+        })
+        .catch(error => console.error('Error fetching image:', error));
+}
+
+function lazyLoadImages() {
+    const images = document.querySelectorAll('.endMenu img');
+
+    images.forEach((img) => {
+        if (isInViewport(img) && !img.src) {
+            fetchImage(img, img.getAttribute('data-src'));
+        }
+    });
+}
+
+function isInViewport(element) {
+    const rect = element.getBoundingClientRect();
+    return (
+        rect.top >= 0 &&
+        rect.left >= 0 &&
+        rect.top <= (window.innerHeight || document.documentElement.clientHeight)
+    );
 }
 
 // Start the game loop
 window.addEventListener("click", () => {
-    requestAnimationFrame(loop);
-    changeMusic();
+    showStartMenu()
 });
 
+function qrCodeGenerator(place, url) {
+    new QRCode(`${place}`, {
+        text: `${url}`,
+        width: 100,
+        height: 100,
+        colorDark: "#1E1D25",
+        colorLight: "transparent",
+        correctLevel: QRCode.CorrectLevel.H
+    });
+}

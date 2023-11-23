@@ -50,6 +50,9 @@ def main():
 
         h, w, _ = frame.shape
 
+        if results.left_hand_landmarks or results.right_hand_landmarks or results.pose_landmarks:
+            sio.emit('body_is_here', True)
+
         if results.left_hand_landmarks:
             left_hand_coords = get_specific_point_coords(results, frame_size_x, frame_size_y, "left", 9)
 
@@ -59,11 +62,6 @@ def main():
             right_hand_coords = get_specific_point_coords(results, frame_size_x, frame_size_y, "right", 9)
 
             sio.emit('right_hand_coords', right_hand_coords)
-
-        if results.pose_landmarks:
-            head_coords = get_specific_point_coords(results, frame_size_x, frame_size_y, "head", 0)
-
-            sio.emit('head_coords', head_coords)
 
         if results.right_hand_landmarks and results.left_hand_landmarks:
             right_pinky = get_all_fingers_coords(results, frame_size_x, frame_size_y, 'right', 'pinky')

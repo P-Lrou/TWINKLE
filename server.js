@@ -3,6 +3,7 @@ const {createServer} = require('node:http');
 const {join} = require('node:path');
 const {Server} = require('socket.io');
 const fs = require('fs');
+const path = require('path');
 
 const app = express();
 const server = createServer(app);
@@ -16,24 +17,52 @@ app.get('/CSS/reset.css', (req, res) => {
     res.sendFile(join(__dirname, './CSS/reset.css'));
 });
 
+app.get('/CSS/styles.css', (req, res) => {
+    res.sendFile(join(__dirname, './CSS/styles.css'));
+});
+
 app.get('/index.js', (req, res) => {
     res.sendFile(join(__dirname, './index.js'));
 });
 
-app.get('/assets/background_1.png', (req, res) => {
-    res.sendFile(join(__dirname, './assets/background_1.png'));
+app.get('/assets/background_classic.png', (req, res) => {
+    res.sendFile(join(__dirname, './assets/background_classic.png'));
 });
 
-app.get('/assets/background_2.png', (req, res) => {
-    res.sendFile(join(__dirname, './assets/background_2.png'));
+app.get('/assets/background_pop.png', (req, res) => {
+    res.sendFile(join(__dirname, './assets/background_pop.png'));
 });
 
-app.get('/assets/background_3.png', (req, res) => {
-    res.sendFile(join(__dirname, './assets/background_3.png'));
+app.get('/assets/background_rock.png', (req, res) => {
+    res.sendFile(join(__dirname, './assets/background_rock.png'));
 });
 
-app.get('/assets/background_4.png', (req, res) => {
-    res.sendFile(join(__dirname, './assets/background_4.png'));
+app.get('/assets/background_techno.png', (req, res) => {
+    res.sendFile(join(__dirname, './assets/background_techno.png'));
+});
+
+app.get('/images/image_1.png', (req, res) => {
+    res.sendFile(join(__dirname, './images/image_1.png'));
+});
+
+app.get('/images/image_2.png', (req, res) => {
+    res.sendFile(join(__dirname, './images/image_2.png'));
+});
+
+app.get('/images/image_3.png', (req, res) => {
+    res.sendFile(join(__dirname, './images/image_3.png'));
+});
+
+app.get('/images/image_4.png', (req, res) => {
+    res.sendFile(join(__dirname, './images/image_4.png'));
+});
+
+app.get('/assets/logo.png', (req, res) => {
+    res.sendFile(join(__dirname, './assets/logo.png'));
+});
+
+app.get('/assets/hand_clap.gif', (req, res) => {
+    res.sendFile(join(__dirname, './assets/hand_clap.gif'));
 });
 
 app.get('/songs/classicSong.mp3', (req, res) => {
@@ -54,28 +83,27 @@ app.get('/songs/technoSong.mp3', (req, res) => {
 
 io.on('connection', (socket) => {
     console.log('a user connected');
+    socket.on('save_image', (data) => {
+        saveImage(data)
+    })
     socket.on('left_hand_coords', (data) => {
         io.emit('left_hand_coords', data);
     });
     socket.on('right_hand_coords', (data) => {
         io.emit('right_hand_coords', data);
     });
-    socket.on('head_coords', (data) => {
-        io.emit('head_coords', data);
+    socket.on('body_is_here', (data) => {
+        io.emit('body_is_here', data);
     });
     socket.on('clap', (data) => {
         io.emit('clap', data);
     });
-    socket.on('save_image', (data) => {
-        saveImage(data)
-    })
 });
 
 
 function saveImage(data) {
 
     try {
-        const fileName = `image_${Date.now()}.png`;
         const folderPath = './images';
 
         if (!fs.existsSync(folderPath)) {
@@ -83,7 +111,7 @@ function saveImage(data) {
         }
 
         if (data) {
-            fs.writeFileSync(`${folderPath}/${fileName}`, data, 'base64');
+            fs.writeFileSync(`${folderPath}/image_${data[1]}.png`, data[0], 'base64');
         } else {
             console.error('Images data are invalids');
         }

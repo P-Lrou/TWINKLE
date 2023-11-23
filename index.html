@@ -5,27 +5,35 @@
     <meta charset="UTF-8">
     <title>Drawing</title>
     <link rel="stylesheet" href="./CSS/reset.css">
+    <link rel="stylesheet" href="./CSS/styles.css">
+    <!-- Import lib to create QR codes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 
 <body>
+<canvas id="canvas"></canvas>
 
-    <div id="header">
-        <div id="message">
-        </div>
+
+<div class="startMenu">
+    <img class="logo" src="./assets/logo.png" alt="logo">
+    <div class="intro">
+        <img class="logo" src="./assets/logo.png" alt="logo">
+        <h2>Cette Expérience est basée sur de la musique, pour changer celle-ci veuillez reproduire le mouvement suivant
+            :</h2>
+        <img class="gif" src="./assets/hand_clap.gif" alt="gif">
+        <h2>Si vous avez compris, merci de bien vouloir reproduire le geste afin de pouvoir lancé l'expérience.</h2>
     </div>
+</div>
 
-    <canvas id="canvas"></canvas>
+<div class="endMenu">
+    <img class="image_1" src="./images/image_1.png" alt="image_1">
+    <img class="image_2" src="./images/image_2.png" alt="image_2">
+    <img class="image_3" src="./images/image_3.png" alt="image_3">
+    <img class="image_4" src="./images/image_4.png" alt="image_4">
+</div>
 
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="./index.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="./index.js"></script>
 </body>
 
 </html>
-
-
-<style>
-    * {
-        overflow: hidden;
-        background-color: black;
-    }
-</style>
