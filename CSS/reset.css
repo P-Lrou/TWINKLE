@@ -1,0 +1,289 @@
+ /* CSS Reset */
+
+    /* Reset default styles */
+    html,
+    body,
+    div,
+    span,
+    applet,
+    object,
+    iframe,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    blockquote,
+    pre,
+    a,
+    abbr,
+    acronym,
+    address,
+    big,
+    cite,
+    code,
+    del,
+    dfn,
+    em,
+    font,
+    img,
+    ins,
+    kbd,
+    q,
+    s,
+    samp,
+    small,
+    strike,
+    strong,
+    sub,
+    sup,
+    tt,
+    var,
+    b,
+    u,
+    i,
+    center,
+    dl,
+    dt,
+    dd,
+    ol,
+    ul,
+    li,
+    fieldset,
+    form,
+    label,
+    legend,
+    table,
+    caption,
+    tbody,
+    tfoot,
+    thead,
+    tr,
+    th,
+    td {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        font-weight: inherit;
+        font-style: inherit;
+        font-size: 100%;
+        font-family: inherit;
+        vertical-align: baseline;
+    }
+
+    /* Correct styling for HTML5 elements */
+    article,
+    aside,
+    details,
+    figcaption,
+    figure,
+    footer,
+    header,
+    hgroup,
+    menu,
+    nav,
+    section {
+        display: block;
+    }
+
+    /* Correct font and size for HTML5 elements in IE */
+    mark {
+        background-color: #ff0;
+        color: #000;
+    }
+
+    /* Preserve correct spacing for modified <sup> and <sub> tags */
+    small,
+    sub,
+    sup {
+        font-size: 75%;
+        line-height: 0;
+        position: relative;
+        vertical-align: baseline;
+    }
+
+    /* Reset default font size for <pre> tags */
+    pre {
+        white-space: pre-wrap;
+    }
+
+    /* Remove default list styling */
+    ul,
+    ol {
+        list-style: none;
+    }
+
+    /* Reset blockquote styling */
+    blockquote,
+    q {
+        quotes: none;
+    }
+
+    blockquote:before,
+    blockquote:after,
+    q:before,
+    q:after {
+        content: "";
+        content: none;
+    }
+
+    /* Reset table formatting */
+    table {
+        border-collapse: collapse;
+        border-spacing: 0;
+    }
+
+    /* Reset default styles for buttons, inputs, selects, and textareas */
+    button,
+    input,
+    select,
+    textarea {
+        margin: 0;
+        padding: 0;
+        font-size: 100%;
+        vertical-align: middle;
+    }
+
+    /* Reset button and input[type="submit"] styling */
+    button,
+    input[type="button"],
+    input[type="reset"],
+    input[type="submit"] {
+        cursor: pointer;
+    }
+
+    /* Reset rendering of <progress> element */
+    progress {
+        vertical-align: baseline;
+    }
+
+    /* Reset styling for <input> type "number" in WebKit */
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+        height: auto;
+    }
+
+    /* Reset styling for <audio> and <video> elements */
+    audio,
+    video {
+        display: inline-block;
+        vertical-align: baseline;
+    }
+
+    /* Reset styling for <audio> and <video> elements in older browsers */
+    audio:not([controls]) {
+        display: none;
+        height: 0;
+    }
+
+    /* Reset default font weight for <h1>-<h6>, <b>, and <strong> */
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    b,
+    strong {
+        font-weight: bold;
+    }
+
+    /* Reset encapsulation styles for <input> */
+    input {
+        border: none;
+        outline: none;
+    }
+
+    /* Reset default styles for <sub> and <sup> */
+    sub,
+    sup {
+        font-size: 75%;
+        line-height: 0;
+        position: relative;
+        vertical-align: baseline;
+    }
+
+    /* Reset encapsulation styles for <svg> */
+    svg:not(:root) {
+        overflow: hidden;
+    }
+
+    /* Reset default styles for <textarea> */
+    textarea {
+        overflow: auto;
+        resize: vertical;
+    }
+
+    /* Reset encapsulation styles for <button> */
+    button,
+    [type="button"],
+    [type="reset"],
+    [type="submit"] {
+        cursor: pointer;
+    }
+
+    /* Reset default inner padding for buttons */
+    button::-moz-focus-inner,
+    [type="button"]::-moz-focus-inner,
+    [type="reset"]::-moz-focus-inner,
+    [type="submit"]::-moz-focus-inner {
+        padding: 0;
+        border: 0;
+    }
+
+    /* Reset default styles for <input> type "checkbox" and "radio" */
+    [type="checkbox"],
+    [type="radio"] {
+        box-sizing: border-box;
+        padding: 0;
+    }
+
+    /* Reset default styles for <input> type "number" */
+    [type="number"]::-webkit-inner-spin-button,
+    [type="number"]::-webkit-outer-spin-button {
+        height: auto;
+    }
+
+    /* Reset default styles for file input */
+    [type="file"] {
+        cursor: pointer;
+        display: block;
+    }
+
+    /* Reset encapsulation styles for <summary> */
+    summary {
+        display: list-item;
+        cursor: pointer;
+    }
+
+    /* Reset encapsulation styles for <canvas> */
+    canvas {
+        display: inline-block;
+        vertical-align: baseline;
+    }
+
+    /* Reset encapsulation styles for <template> */
+    template {
+        display: none;
+    }
+
+    /* Reset encapsulation styles for <bdi> */
+    bdi {
+        direction: ltr;
+        unicode-bidi: bidi-override;
+    }
+
+    /* Reset encapsulation styles for <dialog> */
+    dialog {
+        display: block;
+        position: absolute;
+        left: 0;
+        right: 0;
+    }
+
+    /* Reset encapsulation styles for <script> */
+    script {
+        display: none;
+    }
