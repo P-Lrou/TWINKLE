@@ -4,6 +4,7 @@ const {join} = require('node:path');
 const {Server} = require('socket.io');
 const fs = require('fs');
 const path = require('path');
+const {createCanvas, loadImage} = require('canvas');
 
 const app = express();
 const server = createServer(app);
@@ -65,6 +66,22 @@ app.get('/assets/hand_clap.gif', (req, res) => {
     res.sendFile(join(__dirname, './assets/hand_clap.gif'));
 });
 
+app.get('/assets/classic.svg', (req, res) => {
+    res.sendFile(join(__dirname, './assets/classic.svg'));
+});
+
+app.get('/assets/pop.svg', (req, res) => {
+    res.sendFile(join(__dirname, './assets/pop.svg'));
+});
+
+app.get('/assets/techno.svg', (req, res) => {
+    res.sendFile(join(__dirname, './assets/techno.svg'));
+});
+
+app.get('/assets/rock.svg', (req, res) => {
+    res.sendFile(join(__dirname, './assets/rock.svg'));
+});
+
 app.get('/songs/classicSong.mp3', (req, res) => {
     res.sendFile(join(__dirname, './songs/classicSong.mp3'));
 });
@@ -100,8 +117,11 @@ io.on('connection', (socket) => {
     });
 });
 
+let nameIndex;
+
 
 function saveImage(data) {
+    let name;
 
     try {
         const folderPath = './images';
@@ -112,6 +132,42 @@ function saveImage(data) {
 
         if (data) {
             fs.writeFileSync(`${folderPath}/image_${data[1]}.png`, data[0], 'base64');
+
+            loadImage(`${folderPath}/image_${data[1]}.png`).then((image) => {
+                const canvas = createCanvas(image.width, image.height);
+                const context = canvas.getContext('2d');
+
+                switch (data[1]) {
+                    case(1):
+                        nameIndex = Math.floor(Math.random() * names["classic"].length - 1);
+                        name = names["classic"][nameIndex]
+                        break
+                    case(2):
+                        nameIndex = Math.floor(Math.random() * names["techno"].length - 1);
+                        name = names["techno"][nameIndex]
+                        break
+                    case(3):
+                        nameIndex = Math.floor(Math.random() * names["pop"].length - 1);
+                        name = names["pop"][nameIndex]
+                        break
+                    case(4):
+                        nameIndex = Math.floor(Math.random() * names["rock"].length - 1);
+                        name = names["rock"][nameIndex]
+                        break
+                }
+
+
+                context.drawImage(image, 0, 0);
+
+                context.fillStyle = 'white';
+                context.fillText(`${name}`, 50, 50);
+
+                const outputFilePath = path.join(path.dirname(`${folderPath}/image_${data[1]}.png`), path.basename(`${folderPath}/image_${data[1]}.png`));
+                const output = fs.createWriteStream(outputFilePath);
+                const stream = canvas.createPNGStream({quality: 0.95});
+
+                stream.pipe(output);
+            })
         } else {
             console.error('Images data are invalids');
         }
@@ -124,3 +180,57 @@ function saveImage(data) {
 server.listen(3000, () => {
     console.log('server running at http://localhost:3000');
 });
+
+
+let names = {
+    "classic": [
+        "sonate",
+        "lied",
+        "menuet",
+        "scherzo",
+        "rondo",
+        "symphonie",
+        "gloria",
+        "4 saisons",
+        "printemps",
+        "beethoven",
+        "vivaldi",
+        "brahms",
+        "haydn",
+        "alto",
+        "clavecin",
+        "violoncelle"
+    ],
+    "pop": [
+        "dreadnought",
+        "folk",
+        "jakson",
+        "delaynay",
+        "bobblehead",
+        "beatmaker"
+    ],
+    "techno": [
+        "kraftwerk",
+        "skrillex",
+        "martenot",
+        "orgue",
+        "thérémine",
+        "synthophone",
+        "hansketch",
+        "continumm"
+    ],
+    "rock": [
+        "acid",
+        "aero",
+        "death",
+        "krautrock",
+        "stones",
+        "kranklin",
+        "swing",
+        "memphis",
+        "jagger",
+        "haley",
+        "presley",
+        "electrique"
+    ]
+}

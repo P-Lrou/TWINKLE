@@ -107,18 +107,21 @@ function drawSVG(x, y, color, state) {
     switch (color) {
         case "rgba(255,232,99,0.25)":
             if (state === 1) {
-                color = "rgb(255,232,99)"
-            }
-            svg = `
+                img2.src = "./assets/classic.svg";
+                ctx.drawImage(img2, x, y, SVGSize, SVGSize);
+            } else {
+                svg = `
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080">
                     <path class="cls-1" d="m543.26,231.76s-10.63,302.1-297.76,308.15c-.74.02-.8,1.09-.06,1.18,55.12,6.6,294.57,50.05,297.65,307.15,0,0,5.24-301.46,291.41-308.13.74-.02.8-1.09.07-1.18-54.58-6.58-298.68-50.38-291.31-307.17Z" fill="${color}" />
                 </svg>`;
+            }
             break;
         case "rgba(23,1,251,0.25)":
             if (state === 1) {
-                color = "rgb(23,1,251)"
-            }
-            svg = `
+                img2.src = "./assets/techno.svg";
+                ctx.drawImage(img2, x, y, SVGSize, SVGSize);
+            } else {
+                svg = `
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 235 264">
                     <g>
                         <polyline class="cls-2" points="118.61 215.7 118.61 163.16 118.61 162.28" stroke="${color}" stroke-width="10"/>
@@ -141,12 +144,14 @@ function drawSVG(x, y, color, state) {
                         <polygon class="cls-3" points="118.61 222.73 120.55 231.59 122.5 240.44 118.61 240.43 114.72 240.44 116.67 231.59 118.61 222.73" fill="${color}"/>
                     </g>
                 </svg>`;
+            }
             break;
         case "rgba(130,0,255,0.25)":
             if (state === 1) {
-                color = "rgb(130,0,255)"
-            }
-            svg = `
+                img2.src = "./assets/pop.svg";
+                ctx.drawImage(img2, x, y, SVGSize, SVGSize);
+            } else {
+                svg = `
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 235 264">
                     <polygon class="cls-1" points="140.06 98.38 120.95 5 98.53 98.38 119.3 75.83 140.06 98.38" fill="${color}"/>
                       <polygon class="cls-1" points="140.06 165.62 120.95 259 98.53 165.62 119.3 188.17 140.06 165.62" fill="${color}"/>
@@ -158,12 +163,14 @@ function drawSVG(x, y, color, state) {
                       <polygon class="cls-1" points="186.3 69.42 186.3 89.09 161.09 98.38 166.99 72.93 186.3 69.42" fill="${color}"/>
                       <polygon class="cls-1" points="119.84 117.06 94.84 131.88 119.84 146.7 143.76 131.88 119.84 117.06" fill="${color}"/>
                 </svg>`;
+            }
             break;
         case "rgba(255,0,0,0.25)":
             if (state === 1) {
-                color = "rgb(255,0,0)"
-            }
-            svg = `
+                img2.src = "./assets/rock.svg";
+                ctx.drawImage(img2, x, y, SVGSize, SVGSize);
+            } else {
+                svg = `
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 235 264">
                     <polyline class="cls-2" points="78.64 146.34 22.63 102.83 92.79 110.86" stroke="${color}" stroke-width="5" />
                     <polyline class="cls-2" points="165.4 146.34 221.42 102.83 151.26 110.86" stroke="${color}" stroke-width="5" />
@@ -172,16 +179,13 @@ function drawSVG(x, y, color, state) {
                     <polyline class="cls-2" points="101.21 97.91 122.38 30.21 139.39 98.75" stroke="${color}" stroke-width="5" />
                     <polygon class="cls-1" points="153.39 185.41 120.26 167.68 86.87 184.93 93.49 147.94 66.77 121.51 104 116.38 120.87 82.8 137.26 116.62 174.41 122.29 147.31 148.33 153.39 185.41" fill="${color}"/>
                 </svg>`;
+            }
             break;
     }
 
     if (state === 0) {
         img.src = `data:image/svg+xml,${encodeURIComponent(svg)}`;
         ctx.drawImage(img, x, y, SVGSize, SVGSize);
-    }
-    if (state === 1) {
-        img2.src = `data:image/svg+xml,${encodeURIComponent(svg)}`;
-        ctx.drawImage(img2, x, y, SVGSize, SVGSize);
     }
 }
 
