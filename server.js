@@ -5,6 +5,8 @@ const {Server} = require('socket.io');
 const fs = require('fs');
 const path = require('path');
 const {createCanvas, loadImage} = require('canvas');
+const FormData = require('form-data');
+const axios = require('axios');
 
 const app = express();
 const server = createServer(app);
@@ -82,6 +84,22 @@ app.get('/assets/rock.svg', (req, res) => {
     res.sendFile(join(__dirname, './assets/rock.svg'));
 });
 
+app.get('/assets/classic_light.svg', (req, res) => {
+    res.sendFile(join(__dirname, './assets/classic_light.svg'));
+});
+
+app.get('/assets/pop_light.svg', (req, res) => {
+    res.sendFile(join(__dirname, './assets/pop_light.svg'));
+});
+
+app.get('/assets/techno_light.svg', (req, res) => {
+    res.sendFile(join(__dirname, './assets/techno_light.svg'));
+});
+
+app.get('/assets/rock_light.svg', (req, res) => {
+    res.sendFile(join(__dirname, './assets/rock_light.svg'));
+});
+
 app.get('/songs/classicSong.mp3', (req, res) => {
     res.sendFile(join(__dirname, './songs/classicSong.mp3'));
 });
@@ -124,7 +142,7 @@ function saveImage(data) {
     let name;
 
     try {
-        const folderPath = './images';
+        const folderPath = '../images';
 
         if (!fs.existsSync(folderPath)) {
             fs.mkdirSync(folderPath);
@@ -139,19 +157,19 @@ function saveImage(data) {
 
                 switch (data[1]) {
                     case(1):
-                        nameIndex = Math.floor(Math.random() * names["classic"].length - 1);
+                        nameIndex = Math.floor(Math.random() * names["classic"].length);
                         name = names["classic"][nameIndex]
                         break
                     case(2):
-                        nameIndex = Math.floor(Math.random() * names["techno"].length - 1);
+                        nameIndex = Math.floor(Math.random() * names["techno"].length);
                         name = names["techno"][nameIndex]
                         break
                     case(3):
-                        nameIndex = Math.floor(Math.random() * names["pop"].length - 1);
+                        nameIndex = Math.floor(Math.random() * names["pop"].length);
                         name = names["pop"][nameIndex]
                         break
                     case(4):
-                        nameIndex = Math.floor(Math.random() * names["rock"].length - 1);
+                        nameIndex = Math.floor(Math.random() * names["rock"].length);
                         name = names["rock"][nameIndex]
                         break
                 }
@@ -167,6 +185,18 @@ function saveImage(data) {
                 const stream = canvas.createPNGStream({quality: 0.95});
 
                 stream.pipe(output);
+
+                setTimeout(() => {
+                    const apiUrl = `http://localhost:9000/api.php?file=${encodeURIComponent(outputFilePath)}&name=${data[2]}`;
+
+                    axios.get(apiUrl)
+                        .then(response => {
+                            console.log(response.data);
+                        })
+                        .catch(error => {
+                            console.error("Error:", error);
+                        });
+                }, 1000);
             })
         } else {
             console.error('Images data are invalids');
