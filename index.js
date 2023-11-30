@@ -10,13 +10,13 @@ let waitTimeForRandomPoint = 0
 let previous_timestamp = 0;
 let haveScreen = false
 let actualScreen = "start";
-let background = new Image();
 let songIsPlaying = false;
 let introIsStarted = false;
 let deltaTime;
 let elapsedTimeForMusic = 0;
 let endIsShowed = false;
 let imageLinks = []
+const myVideo = document.querySelector('.myVideo')
 
 // Canvas initialization
 const canvas = document.getElementById("canvas");
@@ -31,6 +31,9 @@ const rockSong = new Audio("./songs/rockSong.mp3")
 function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+
+    myVideo.width = window.innerWidth;
+    myVideo.height = window.innerHeight;
 }
 
 // Call resizeCanvas initially and on window resize
@@ -103,7 +106,6 @@ const img2 = new Image();
 
 // Function to draw an SVG at specified coordinates and color
 function drawSVG(x, y, color, state) {
-    let svg = undefined;
 
     switch (color) {
         case "#FCFFD2":
@@ -111,8 +113,10 @@ function drawSVG(x, y, color, state) {
                 img2.src = "./assets/classic.svg";
                 ctx.drawImage(img2, x, y, SVGSize, SVGSize);
             } else {
-                img.src = "./assets/classic_light.svg";
+                img.src = "./assets/classic.svg";
+                ctx.globalAlpha = 0.1;
                 ctx.drawImage(img, x, y, SVGSize, SVGSize);
+                ctx.globalAlpha = 1.0;
             }
             break;
         case "#00CDEF":
@@ -120,8 +124,10 @@ function drawSVG(x, y, color, state) {
                 img2.src = "./assets/techno.svg";
                 ctx.drawImage(img2, x, y, SVGSize, SVGSize);
             } else {
-                img.src = "./assets/techno_light.svg";
+                img.src = "./assets/techno.svg";
+                ctx.globalAlpha = 0.1;
                 ctx.drawImage(img, x, y, SVGSize, SVGSize);
+                ctx.globalAlpha = 1.0;
             }
             break;
         case "#8200FF":
@@ -129,8 +135,10 @@ function drawSVG(x, y, color, state) {
                 img2.src = "./assets/pop.svg";
                 ctx.drawImage(img2, x, y, SVGSize, SVGSize);
             } else {
-                img.src = "./assets/pop_light.svg";
+                img.src = "./assets/pop.svg";
+                ctx.globalAlpha = 0.1;
                 ctx.drawImage(img, x, y, SVGSize, SVGSize);
+                ctx.globalAlpha = 1.0;
             }
             break;
         case "#FF004F":
@@ -138,8 +146,10 @@ function drawSVG(x, y, color, state) {
                 img2.src = "./assets/rock.svg";
                 ctx.drawImage(img2, x, y, SVGSize, SVGSize);
             } else {
-                img.src = "./assets/rock_light.svg";
+                img.src = "./assets/rock.svg";
+                ctx.globalAlpha = 0.1;
                 ctx.drawImage(img, x, y, SVGSize, SVGSize);
+                ctx.globalAlpha = 1.0;
             }
             break;
     }
@@ -167,7 +177,7 @@ function update(deltaTime) {
         if (elapsedTime > removalTime || point.state === 0) {
             point.vy += gravity * deltaTime;
             point.y = point.y + (point.vy * deltaTime);
-            if (point.y + SVGSize > canvas.height) {
+            if (point.y + SVGSize / 2 > canvas.height) {
                 fall_array.splice(i, 1);
             }
         }
@@ -189,10 +199,11 @@ function generateImage() {
     const image = new Image();
     image.src = canvas.toDataURL('image/png');
     let data = image.src.substring(22)
+    const pointNumber = constellation_points.length
     const currentDate = new Date();
     const formattedDateTime = `${currentDate.getFullYear()}${currentDate.getMonth() + 1}${currentDate.getDate()}${currentDate.getHours()}${currentDate.getMinutes()}${currentDate.getSeconds()}`;
     imageLinks.push(`${formattedDateTime}.png`)
-    socket.emit('save_image', [data, imgCount, formattedDateTime]);
+    socket.emit('save_image', [data, imgCount, formattedDateTime, pointNumber]);
 }
 
 function drawLine(ctx, x1, y1, x2, y2) {
@@ -206,10 +217,7 @@ let constellation_points = []
 
 // Function to draw on the canvas
 function draw() {
-    // ctx.fillStyle = "black";
-    // ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    ctx.drawImage(background, 0, 0, window.innerWidth, window.innerHeight);
+    ctx.drawImage(myVideo, 0, 0, canvas.width, canvas.height);
 
 
     let i = -1
@@ -365,6 +373,7 @@ function loop(timestamp) {
     if (actualScreen === "game") {
         document.querySelector('.startMenu').style.display = "none";
         document.getElementById('canvas').style.display = "block";
+        myVideo.style.display = "block"
         draw();
         if (elapsedTimeForMusic > 60) {
             changeMusic();
@@ -386,25 +395,29 @@ function loop(timestamp) {
     requestAnimationFrame(loop);
 }
 
+
 function changeBackground() {
+
     switch (actualMusique) {
         case 1:
-            background.src = "./assets/background_classic.png";
+            myVideo.src = "./assets/classic_background.mp4"
             break;
         case 2:
-            background.src = "./assets/background_techno.png";
+            myVideo.src = "./assets/techno_background.mp4"
             break;
         case 3:
-            background.src = "./assets/background_pop.png";
+            myVideo.src = "./assets/pop_background.mp4"
             break;
         case 4:
-            background.src = "./assets/background_rock.png";
+            myVideo.src = "./assets/rock_background.mp4"
             break;
     }
 }
 
 function showStartMenu() {
     document.getElementById('canvas').style.display = "none";
+    myVideo.style.display = "none"
+    mySpan.style.display = "none"
 }
 
 function showGameIntro() {
@@ -416,6 +429,7 @@ function showGameIntro() {
 function showEnd() {
     endIsShowed = true;
     document.querySelector('canvas').style.display = "none";
+    myVideo.style.display = "none"
     document.querySelector('.endMenu').style.display = "grid";
 
     const imageSources = [

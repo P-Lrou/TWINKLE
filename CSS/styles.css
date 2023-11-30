@@ -58,8 +58,21 @@
     background-color: transparent;
 }
 
-.endMenu #qrcode img{
+.endMenu #qrcode img {
     border-radius: 0;
     object-fit: contain;
     margin: 0;
+}
+
+canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: transparent;
+}
+
+.myVideo {
+    display: none;
+    top: 0;
+    left: 0;
 }

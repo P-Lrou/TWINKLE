@@ -28,20 +28,20 @@ app.get('/index.js', (req, res) => {
     res.sendFile(join(__dirname, './index.js'));
 });
 
-app.get('/assets/background_classic.png', (req, res) => {
-    res.sendFile(join(__dirname, './assets/background_classic.png'));
+app.get('/assets/classic_background.mp4', (req, res) => {
+    res.sendFile(join(__dirname, './assets/classic_background.mp4'));
 });
 
-app.get('/assets/background_pop.png', (req, res) => {
-    res.sendFile(join(__dirname, './assets/background_pop.png'));
+app.get('/assets/techno_background.mp4', (req, res) => {
+    res.sendFile(join(__dirname, './assets/techno_background.mp4'));
 });
 
-app.get('/assets/background_rock.png', (req, res) => {
-    res.sendFile(join(__dirname, './assets/background_rock.png'));
+app.get('/assets/pop_background.mp4', (req, res) => {
+    res.sendFile(join(__dirname, './assets/pop_background.mp4'));
 });
 
-app.get('/assets/background_techno.png', (req, res) => {
-    res.sendFile(join(__dirname, './assets/background_techno.png'));
+app.get('/assets/rock_background.mp4', (req, res) => {
+    res.sendFile(join(__dirname, './assets/rock_background.mp4'));
 });
 
 app.get('/images/image_1.png', (req, res) => {
@@ -82,22 +82,6 @@ app.get('/assets/techno.svg', (req, res) => {
 
 app.get('/assets/rock.svg', (req, res) => {
     res.sendFile(join(__dirname, './assets/rock.svg'));
-});
-
-app.get('/assets/classic_light.svg', (req, res) => {
-    res.sendFile(join(__dirname, './assets/classic_light.svg'));
-});
-
-app.get('/assets/pop_light.svg', (req, res) => {
-    res.sendFile(join(__dirname, './assets/pop_light.svg'));
-});
-
-app.get('/assets/techno_light.svg', (req, res) => {
-    res.sendFile(join(__dirname, './assets/techno_light.svg'));
-});
-
-app.get('/assets/rock_light.svg', (req, res) => {
-    res.sendFile(join(__dirname, './assets/rock_light.svg'));
 });
 
 app.get('/songs/classicSong.mp3', (req, res) => {
@@ -180,9 +164,14 @@ function saveImage(data) {
                 context.fillStyle = 'white';
                 context.fillText(`${name}`, 50, 50);
 
+                const pointNumberTxt = `Number of stars linked : ${data[3]}`;
+                const textWidth = context.measureText(pointNumberTxt).width;
+                const x = image.width - 50 - textWidth;
+                context.fillText(pointNumberTxt, x, 50);
+
                 const outputFilePath = path.join(path.dirname(`${folderPath}/image_${data[1]}.png`), path.basename(`${folderPath}/image_${data[1]}.png`));
                 const output = fs.createWriteStream(outputFilePath);
-                const stream = canvas.createPNGStream({quality: 0.95});
+                const stream = canvas.createPNGStream({quality: 100});
 
                 stream.pipe(output);
 
