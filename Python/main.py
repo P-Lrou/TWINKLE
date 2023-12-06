@@ -94,7 +94,7 @@ def main():
             else:
                 count = 0
 
-        cv2.imshow('Raw Webcam Feed', image)
+        cv2.imshow('TWINKLE', image)
 
         if cv2.waitKey(10) & 0xFF == ord('q'):
             p.kill()

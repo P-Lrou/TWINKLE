@@ -5,7 +5,7 @@ const socket = io.connect();
 let can_update = false;
 let color = "#FFFFFF"; // Default color for sand squares
 let actualMusique = 0; // Current music style
-let SVGSize = 100;
+let SVGSize = 55;
 let waitTimeForRandomPoint = 0
 let previous_timestamp = 0;
 let haveScreen = false
@@ -73,9 +73,17 @@ socket.on('clap', () => {
 });
 
 socket.on('body_is_here', () => {
-    if (actualScreen === "start" && !introIsStarted) {
-        showGameIntro()
+    if (actualScreen === "start") {
+        setTimeout(() => {
+            if (!introIsStarted) {
+                showGameIntro()
+            }
+        }, 2000)
     }
+});
+
+socket.on('restart', () => {
+    location.reload();
 });
 
 let canAddToArray = false
@@ -113,10 +121,12 @@ function drawSVG(x, y, color, state) {
                 img2.src = "./assets/classic.svg";
                 ctx.drawImage(img2, x, y, SVGSize, SVGSize);
             } else {
+                SVGSize = 35;
                 img.src = "./assets/classic.svg";
-                ctx.globalAlpha = 0.1;
+                ctx.globalAlpha = 0.4;
                 ctx.drawImage(img, x, y, SVGSize, SVGSize);
                 ctx.globalAlpha = 1.0;
+                SVGSize = 55;
             }
             break;
         case "#00CDEF":
@@ -124,10 +134,12 @@ function drawSVG(x, y, color, state) {
                 img2.src = "./assets/techno.svg";
                 ctx.drawImage(img2, x, y, SVGSize, SVGSize);
             } else {
+                SVGSize = 35;
                 img.src = "./assets/techno.svg";
-                ctx.globalAlpha = 0.1;
+                ctx.globalAlpha = 0.4;
                 ctx.drawImage(img, x, y, SVGSize, SVGSize);
                 ctx.globalAlpha = 1.0;
+                SVGSize = 55;
             }
             break;
         case "#8200FF":
@@ -135,10 +147,12 @@ function drawSVG(x, y, color, state) {
                 img2.src = "./assets/pop.svg";
                 ctx.drawImage(img2, x, y, SVGSize, SVGSize);
             } else {
+                SVGSize = 35;
                 img.src = "./assets/pop.svg";
-                ctx.globalAlpha = 0.1;
+                ctx.globalAlpha = 0.4;
                 ctx.drawImage(img, x, y, SVGSize, SVGSize);
                 ctx.globalAlpha = 1.0;
+                SVGSize = 55;
             }
             break;
         case "#FF004F":
@@ -146,10 +160,12 @@ function drawSVG(x, y, color, state) {
                 img2.src = "./assets/rock.svg";
                 ctx.drawImage(img2, x, y, SVGSize, SVGSize);
             } else {
+                SVGSize = 35;
                 img.src = "./assets/rock.svg";
-                ctx.globalAlpha = 0.1;
+                ctx.globalAlpha = 0.4;
                 ctx.drawImage(img, x, y, SVGSize, SVGSize);
                 ctx.globalAlpha = 1.0;
+                SVGSize = 55;
             }
             break;
     }
@@ -203,14 +219,16 @@ function generateImage() {
     const currentDate = new Date();
     const formattedDateTime = `${currentDate.getFullYear()}${currentDate.getMonth() + 1}${currentDate.getDate()}${currentDate.getHours()}${currentDate.getMinutes()}${currentDate.getSeconds()}`;
     imageLinks.push(`${formattedDateTime}.png`)
-    socket.emit('save_image', [data, imgCount, formattedDateTime, pointNumber]);
+    socket.emit('save_image', [data, imgCount, formattedDateTime, pointNumber, Math.floor(elapsedTimeForMusic - 4)]);
 }
 
 function drawLine(ctx, x1, y1, x2, y2) {
+    ctx.globalAlpha = 0.7;
     ctx.beginPath();
     ctx.moveTo(x1, y1);
     ctx.lineTo(x2, y2);
     ctx.stroke();
+    ctx.globalAlpha = 1;
 }
 
 let constellation_points = []
@@ -400,16 +418,16 @@ function changeBackground() {
 
     switch (actualMusique) {
         case 1:
-            myVideo.src = "./assets/classic_background.mp4"
-            break;
-        case 2:
-            myVideo.src = "./assets/techno_background.mp4"
-            break;
-        case 3:
             myVideo.src = "./assets/pop_background.mp4"
             break;
-        case 4:
+        case 2:
             myVideo.src = "./assets/rock_background.mp4"
+            break;
+        case 3:
+            myVideo.src = "./assets/classic_background.mp4"
+            break;
+        case 4:
+            myVideo.src = "./assets/techno_background.mp4"
             break;
     }
 }
@@ -425,6 +443,8 @@ function showGameIntro() {
     document.querySelector('.startMenu .logo').style.display = "none";
     document.querySelector('.startMenu .intro').style.display = "block";
 }
+
+let haveAnimQR = false;
 
 function showEnd() {
     endIsShowed = true;
@@ -447,6 +467,21 @@ function showEnd() {
 
     const url = `https://twinkle.pierrelouisrousseaux.fr/index.php?img1=${imageLinks[0]}&img2=${imageLinks[1]}&img3=${imageLinks[2]}&img4=${imageLinks[3]}`;
     qrCodeGenerator("qrcode", url)
+    if (!haveAnimQR) {
+        document.querySelector('#qrcode').style.opacity = "0"
+    }
+    setTimeout(() => {
+        if (!haveAnimQR) {
+            haveAnimQR = true;
+            document.querySelector('#qrcode').style.animation = "qrCodeArrived 2s"
+            setTimeout(() => {
+                document.querySelector('#qrcode').style.opacity = "1";
+                setTimeout(() => {
+                    socket.emit("restart", true)
+                }, 90000)
+            }, 2000)
+        }
+    }, 4000)
 }
 
 function fetchImage(img, src) {

@@ -4,9 +4,13 @@ const {join} = require('node:path');
 const {Server} = require('socket.io');
 const fs = require('fs');
 const path = require('path');
-const {createCanvas, loadImage} = require('canvas');
+const {createCanvas, loadImage, registerFont} = require('canvas');
 const FormData = require('form-data');
 const axios = require('axios');
+
+registerFont("../assets/Figerona.ttf", {family: 'Figerona'});
+
+// Chargez la police
 
 const app = express();
 const server = createServer(app);
@@ -40,6 +44,10 @@ app.get('/assets/pop_background.mp4', (req, res) => {
     res.sendFile(join(__dirname, './assets/pop_background.mp4'));
 });
 
+app.get('/assets/Figerona.ttf', (req, res) => {
+    res.sendFile(join(__dirname, './assets/Figerona.ttf'));
+});
+
 app.get('/assets/rock_background.mp4', (req, res) => {
     res.sendFile(join(__dirname, './assets/rock_background.mp4'));
 });
@@ -64,8 +72,8 @@ app.get('/assets/logo.png', (req, res) => {
     res.sendFile(join(__dirname, './assets/logo.png'));
 });
 
-app.get('/assets/hand_clap.gif', (req, res) => {
-    res.sendFile(join(__dirname, './assets/hand_clap.gif'));
+app.get('/assets/hand_clap.mp4', (req, res) => {
+    res.sendFile(join(__dirname, './assets/hand_clap.mp4'));
 });
 
 app.get('/assets/classic.svg', (req, res) => {
@@ -117,6 +125,9 @@ io.on('connection', (socket) => {
     socket.on('clap', (data) => {
         io.emit('clap', data);
     });
+    socket.on('restart', (data) => {
+        io.emit('restart', data);
+    });
 });
 
 let nameIndex;
@@ -138,22 +149,33 @@ function saveImage(data) {
             loadImage(`${folderPath}/image_${data[1]}.png`).then((image) => {
                 const canvas = createCanvas(image.width, image.height);
                 const context = canvas.getContext('2d');
+                let nameIndex = 0
+
+                if (parseInt(data[3]) <= 3) {
+                    nameIndex = 0
+                } else if (parseInt(data[3]) > 3 && parseInt(data[3]) <= 6) {
+                    nameIndex = 1
+                } else if (parseInt(data[3]) > 6 && parseInt(data[3]) <= 10) {
+                    nameIndex = 2
+                } else if (parseInt(data[3]) > 10 && parseInt(data[3]) <= 15) {
+                    nameIndex = 3
+                } else if (parseInt(data[3]) > 15 && parseInt(data[3]) <= 20) {
+                    nameIndex = 4
+                } else if (parseInt(data[3]) > 20) {
+                    nameIndex = 5
+                }
 
                 switch (data[1]) {
                     case(1):
-                        nameIndex = Math.floor(Math.random() * names["classic"].length);
                         name = names["classic"][nameIndex]
                         break
                     case(2):
-                        nameIndex = Math.floor(Math.random() * names["techno"].length);
                         name = names["techno"][nameIndex]
                         break
                     case(3):
-                        nameIndex = Math.floor(Math.random() * names["pop"].length);
                         name = names["pop"][nameIndex]
                         break
                     case(4):
-                        nameIndex = Math.floor(Math.random() * names["rock"].length);
                         name = names["rock"][nameIndex]
                         break
                 }
@@ -161,13 +183,26 @@ function saveImage(data) {
 
                 context.drawImage(image, 0, 0);
 
+                context.font = '30px Figerona';
+                context.fontWeight = '200';
                 context.fillStyle = 'white';
-                context.fillText(`${name}`, 50, 50);
+                let text = `Name: ${name.toUpperCase()}`;
+                let textWidth = context.measureText(text).width;
+                let x = image.width - 100 - textWidth;
+                context.fillText(`${text}`, x, 100);
 
-                const pointNumberTxt = `Number of stars linked : ${data[3]}`;
-                const textWidth = context.measureText(pointNumberTxt).width;
-                const x = image.width - 50 - textWidth;
-                context.fillText(pointNumberTxt, x, 50);
+                text = `Time: ${data[4]}sec`;
+                textWidth = context.measureText(text).width;
+                context.fillText(`${text}`, 100, 100);
+
+                loadImage("../assets/logo.png").then((logo) => {
+                    context.drawImage(logo, image.width - 325, image.height - 185, 300, 177);
+                });
+
+                const pointNumberTxt = `${data[3]} stars linked`;
+                let y = image.height - 100;
+                context.fillText(pointNumberTxt, 100, y);
+
 
                 const outputFilePath = path.join(path.dirname(`${folderPath}/image_${data[1]}.png`), path.basename(`${folderPath}/image_${data[1]}.png`));
                 const output = fs.createWriteStream(outputFilePath);
@@ -203,53 +238,35 @@ server.listen(3000, () => {
 
 let names = {
     "classic": [
-        "sonate",
-        "lied",
-        "menuet",
-        "scherzo",
-        "rondo",
-        "symphonie",
-        "gloria",
-        "4 saisons",
-        "printemps",
-        "beethoven",
-        "vivaldi",
-        "brahms",
-        "haydn",
-        "alto",
-        "clavecin",
-        "violoncelle"
+        "Alto",
+        "Gloria",
+        "Symphonie",
+        "Sonate",
+        "Vivaldi",
+        "4 saisons"
     ],
     "pop": [
-        "dreadnought",
-        "folk",
-        "jakson",
-        "delaynay",
-        "bobblehead",
-        "beatmaker"
+        "Dreadnought",
+        "Folk",
+        "Delaunay",
+        "Silver Pop",
+        "Bobblehead",
+        "Beatmaker"
     ],
     "techno": [
-        "kraftwerk",
-        "skrillex",
-        "martenot",
-        "orgue",
-        "thérémine",
-        "synthophone",
-        "hansketch",
-        "continumm"
+        "Continuum",
+        "Skrillex",
+        "Uppermost",
+        "Martenot",
+        "Kraytwerk",
+        "Thérémine"
     ],
     "rock": [
-        "acid",
-        "aero",
-        "death",
-        "krautrock",
-        "stones",
-        "kranklin",
-        "swing",
-        "memphis",
-        "jagger",
-        "haley",
-        "presley",
-        "electrique"
+        "Celestival Reverie",
+        "Nebule Rock",
+        "Memphis",
+        "Starcatcher",
+        "Stardust Dreams",
+        "Aero"
     ]
 }
