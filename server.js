@@ -186,14 +186,11 @@ function saveImage(data) {
                 context.font = '30px Figerona';
                 context.fontWeight = '200';
                 context.fillStyle = 'white';
-                let text = `Name: ${name.toUpperCase()}`;
-                let textWidth = context.measureText(text).width;
-                let x = image.width - 100 - textWidth;
-                context.fillText(`${text}`, x, 100);
+                let text1 = `Constellation ${name.toUpperCase()}`;
+                context.fillText(`${text1}`, 75, 75);
 
-                text = `Time: ${data[4]}sec`;
-                textWidth = context.measureText(text).width;
-                context.fillText(`${text}`, 100, 100);
+                let text2 = `Time: ${data[4]}sec`;
+                context.fillText(`${text2}`, 75, 110);
 
                 loadImage("../assets/logo.png").then((logo) => {
                     context.drawImage(logo, image.width - 325, image.height - 185, 300, 177);

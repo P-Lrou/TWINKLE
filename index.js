@@ -479,7 +479,7 @@ function showEnd() {
                 setTimeout(() => {
                     socket.emit("restart", true)
                 }, 90000)
-            }, 2000)
+            }, 4000)
         }
     }, 4000)
 }
@@ -511,3 +511,12 @@ function qrCodeGenerator(place, url) {
         correctLevel: QRCode.CorrectLevel.H
     });
 }
+
+function detectEnterKeyRelease(event) {
+    if (event.key === "Enter") {
+        socket.emit('clap', true);
+    }
+}
+
+
+document.addEventListener("keyup", detectEnterKeyRelease);

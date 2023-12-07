@@ -21,10 +21,18 @@
     display: none;
 }
 
-.intro h2 {
+.intro .h2First {
     text-align: center;
     font-size: 1.8vw;
+    font-weight: 200;
     margin-top: -8vh;
+    margin-bottom: 2vh;
+    font-family: "Figerona";
+}
+
+.intro .h2Second {
+    text-align: center;
+    font-size: 1.8vw;
     font-weight: 200;
     font-family: "Figerona";
 }
@@ -33,7 +41,7 @@
     display: block;
     margin-left: auto;
     margin-right: auto;
-    width: 70%;
+    width: 60%;
 }
 
 .intro .logo {
@@ -61,10 +69,10 @@
 
 .endMenu #qrcode {
     position: absolute;
-    top: 51%;
-    left: 51%;
-    transform: translate(-51%, -51%);
-    width: 15vw;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 12vw;
     background-color: transparent;
 }
 
