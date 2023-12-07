@@ -1,3 +1,8 @@
+@font-face {
+    font-family: "Figerona";
+    src: url("../assets/Figerona.ttf");
+}
+
 * {
     overflow: hidden;
     background-color: black;
@@ -7,7 +12,8 @@
     display: block;
     margin-left: auto;
     margin-right: auto;
-    width: 40%;
+    margin-top: 13%;
+    width: 50%;
 }
 
 .startMenu .intro {
@@ -15,24 +21,35 @@
     display: none;
 }
 
-.intro h2{
+.intro .h2First {
     text-align: center;
-    font-size: 2vw;
-    margin-top: 1vh;
+    font-size: 1.8vw;
+    font-weight: 200;
+    margin-top: -8vh;
+    margin-bottom: 2vh;
+    font-family: "Figerona";
 }
 
-.intro img{
+.intro .h2Second {
+    text-align: center;
+    font-size: 1.8vw;
+    font-weight: 200;
+    font-family: "Figerona";
+}
+
+.intro video {
     display: block;
     margin-left: auto;
     margin-right: auto;
     width: 60%;
 }
 
-.intro .logo{
+.intro .logo {
     display: block;
     margin-left: auto;
     margin-right: auto;
-    width: 10%;
+    margin-top: -5%;
+    width: 35%;
 }
 
 .endMenu {
@@ -48,4 +65,41 @@
     object-fit: cover;
     margin: 1.5vw;
     border-radius: 1.2vw;
+}
+
+.endMenu #qrcode {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 12vw;
+    background-color: transparent;
+}
+
+.endMenu #qrcode img {
+    border-radius: 0;
+    object-fit: contain;
+    margin: 0;
+}
+
+canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: transparent;
+}
+
+.myVideo {
+    display: none;
+    top: 0;
+    left: 0;
+}
+
+@keyframes qrCodeArrived {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }

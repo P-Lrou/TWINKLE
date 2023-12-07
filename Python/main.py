@@ -9,7 +9,7 @@ from get_position import *
 
 def main():
     # Start the Node.js server
-    p = subprocess.Popen(["node", "./server.js"])
+    p = subprocess.Popen(["node", "../server.js"])
 
     # Wait for the server to initialize
     time.sleep(2)
@@ -94,7 +94,7 @@ def main():
             else:
                 count = 0
 
-        cv2.imshow('Raw Webcam Feed', image)
+        cv2.imshow('TWINKLE', image)
 
         if cv2.waitKey(10) & 0xFF == ord('q'):
             p.kill()

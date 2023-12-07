@@ -4,7 +4,13 @@ const {join} = require('node:path');
 const {Server} = require('socket.io');
 const fs = require('fs');
 const path = require('path');
-const {createCanvas, loadImage} = require('canvas');
+const {createCanvas, loadImage, registerFont} = require('canvas');
+const FormData = require('form-data');
+const axios = require('axios');
+
+registerFont("../assets/Figerona.ttf", {family: 'Figerona'});
+
+// Chargez la police
 
 const app = express();
 const server = createServer(app);
@@ -26,20 +32,24 @@ app.get('/index.js', (req, res) => {
     res.sendFile(join(__dirname, './index.js'));
 });
 
-app.get('/assets/background_classic.png', (req, res) => {
-    res.sendFile(join(__dirname, './assets/background_classic.png'));
+app.get('/assets/classic_background.mp4', (req, res) => {
+    res.sendFile(join(__dirname, './assets/classic_background.mp4'));
 });
 
-app.get('/assets/background_pop.png', (req, res) => {
-    res.sendFile(join(__dirname, './assets/background_pop.png'));
+app.get('/assets/techno_background.mp4', (req, res) => {
+    res.sendFile(join(__dirname, './assets/techno_background.mp4'));
 });
 
-app.get('/assets/background_rock.png', (req, res) => {
-    res.sendFile(join(__dirname, './assets/background_rock.png'));
+app.get('/assets/pop_background.mp4', (req, res) => {
+    res.sendFile(join(__dirname, './assets/pop_background.mp4'));
 });
 
-app.get('/assets/background_techno.png', (req, res) => {
-    res.sendFile(join(__dirname, './assets/background_techno.png'));
+app.get('/assets/Figerona.ttf', (req, res) => {
+    res.sendFile(join(__dirname, './assets/Figerona.ttf'));
+});
+
+app.get('/assets/rock_background.mp4', (req, res) => {
+    res.sendFile(join(__dirname, './assets/rock_background.mp4'));
 });
 
 app.get('/images/image_1.png', (req, res) => {
@@ -62,8 +72,8 @@ app.get('/assets/logo.png', (req, res) => {
     res.sendFile(join(__dirname, './assets/logo.png'));
 });
 
-app.get('/assets/hand_clap.gif', (req, res) => {
-    res.sendFile(join(__dirname, './assets/hand_clap.gif'));
+app.get('/assets/hand_clap.mp4', (req, res) => {
+    res.sendFile(join(__dirname, './assets/hand_clap.mp4'));
 });
 
 app.get('/assets/classic.svg', (req, res) => {
@@ -115,6 +125,9 @@ io.on('connection', (socket) => {
     socket.on('clap', (data) => {
         io.emit('clap', data);
     });
+    socket.on('restart', (data) => {
+        io.emit('restart', data);
+    });
 });
 
 let nameIndex;
@@ -124,7 +137,7 @@ function saveImage(data) {
     let name;
 
     try {
-        const folderPath = './images';
+        const folderPath = '../images';
 
         if (!fs.existsSync(folderPath)) {
             fs.mkdirSync(folderPath);
@@ -136,22 +149,33 @@ function saveImage(data) {
             loadImage(`${folderPath}/image_${data[1]}.png`).then((image) => {
                 const canvas = createCanvas(image.width, image.height);
                 const context = canvas.getContext('2d');
+                let nameIndex = 0
+
+                if (parseInt(data[3]) <= 3) {
+                    nameIndex = 0
+                } else if (parseInt(data[3]) > 3 && parseInt(data[3]) <= 6) {
+                    nameIndex = 1
+                } else if (parseInt(data[3]) > 6 && parseInt(data[3]) <= 10) {
+                    nameIndex = 2
+                } else if (parseInt(data[3]) > 10 && parseInt(data[3]) <= 15) {
+                    nameIndex = 3
+                } else if (parseInt(data[3]) > 15 && parseInt(data[3]) <= 20) {
+                    nameIndex = 4
+                } else if (parseInt(data[3]) > 20) {
+                    nameIndex = 5
+                }
 
                 switch (data[1]) {
                     case(1):
-                        nameIndex = Math.floor(Math.random() * names["classic"].length - 1);
                         name = names["classic"][nameIndex]
                         break
                     case(2):
-                        nameIndex = Math.floor(Math.random() * names["techno"].length - 1);
                         name = names["techno"][nameIndex]
                         break
                     case(3):
-                        nameIndex = Math.floor(Math.random() * names["pop"].length - 1);
                         name = names["pop"][nameIndex]
                         break
                     case(4):
-                        nameIndex = Math.floor(Math.random() * names["rock"].length - 1);
                         name = names["rock"][nameIndex]
                         break
                 }
@@ -159,14 +183,41 @@ function saveImage(data) {
 
                 context.drawImage(image, 0, 0);
 
+                context.font = '30px Figerona';
+                context.fontWeight = '200';
                 context.fillStyle = 'white';
-                context.fillText(`${name}`, 50, 50);
+                let text1 = `Constellation ${name.toUpperCase()}`;
+                context.fillText(`${text1}`, 75, 75);
+
+                let text2 = `Time: ${data[4]}sec`;
+                context.fillText(`${text2}`, 75, 110);
+
+                loadImage("../assets/logo.png").then((logo) => {
+                    context.drawImage(logo, image.width - 325, image.height - 185, 300, 177);
+                });
+
+                const pointNumberTxt = `${data[3]} stars linked`;
+                let y = image.height - 100;
+                context.fillText(pointNumberTxt, 100, y);
+
 
                 const outputFilePath = path.join(path.dirname(`${folderPath}/image_${data[1]}.png`), path.basename(`${folderPath}/image_${data[1]}.png`));
                 const output = fs.createWriteStream(outputFilePath);
-                const stream = canvas.createPNGStream({quality: 0.95});
+                const stream = canvas.createPNGStream({quality: 100});
 
                 stream.pipe(output);
+
+                setTimeout(() => {
+                    const apiUrl = `http://localhost:9000/api.php?file=${encodeURIComponent(outputFilePath)}&name=${data[2]}`;
+
+                    axios.get(apiUrl)
+                        .then(response => {
+                            console.log(response.data);
+                        })
+                        .catch(error => {
+                            console.error("Error:", error);
+                        });
+                }, 1000);
             })
         } else {
             console.error('Images data are invalids');
@@ -184,53 +235,35 @@ server.listen(3000, () => {
 
 let names = {
     "classic": [
-        "sonate",
-        "lied",
-        "menuet",
-        "scherzo",
-        "rondo",
-        "symphonie",
-        "gloria",
-        "4 saisons",
-        "printemps",
-        "beethoven",
-        "vivaldi",
-        "brahms",
-        "haydn",
-        "alto",
-        "clavecin",
-        "violoncelle"
+        "Alto",
+        "Gloria",
+        "Symphonie",
+        "Sonate",
+        "Vivaldi",
+        "4 saisons"
     ],
     "pop": [
-        "dreadnought",
-        "folk",
-        "jakson",
-        "delaynay",
-        "bobblehead",
-        "beatmaker"
+        "Dreadnought",
+        "Folk",
+        "Delaunay",
+        "Silver Pop",
+        "Bobblehead",
+        "Beatmaker"
     ],
     "techno": [
-        "kraftwerk",
-        "skrillex",
-        "martenot",
-        "orgue",
-        "thérémine",
-        "synthophone",
-        "hansketch",
-        "continumm"
+        "Continuum",
+        "Skrillex",
+        "Uppermost",
+        "Martenot",
+        "Kraytwerk",
+        "Thérémine"
     ],
     "rock": [
-        "acid",
-        "aero",
-        "death",
-        "krautrock",
-        "stones",
-        "kranklin",
-        "swing",
-        "memphis",
-        "jagger",
-        "haley",
-        "presley",
-        "electrique"
+        "Celestival Reverie",
+        "Nebule Rock",
+        "Memphis",
+        "Starcatcher",
+        "Stardust Dreams",
+        "Aero"
     ]
 }
