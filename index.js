@@ -100,10 +100,10 @@ function drawSand(x, y) {
     } else {
         if (canAddToArray) {
             waitTimeForRandomPoint = 0;
-            sand_array.push({x, y, vy, state: 1, color});
+            sand_array.push({ x, y, vy, state: 1, color });
             canAddToArray = false
         } else {
-            sand_array.push({x, y, vy, state: 0, color});
+            sand_array.push({ x, y, vy, state: 0, color });
         }
     }
 }
@@ -479,9 +479,9 @@ function showEnd() {
                 setTimeout(() => {
                     socket.emit("restart", true)
                 }, 90000)
-            }, 4000)
+            }, 2000)
         }
-    }, 4000)
+    }, 10000)
 }
 
 function fetchImage(img, src) {
